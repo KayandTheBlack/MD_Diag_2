@@ -92,6 +92,27 @@ for inter in interactionterms:
 
 #df['service_utilization'] = df['n_outp'] + df['n_emerg'] + df['n_inp']
 
+
+"Imputation of unknown race"
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+le =le.fit(df['race'])
+list(le.classes_)
+df['race'] = le.transform(df['race'])
+
+#df['race'] = le.fit_transform(df['race'])
+
+from sklearn.preprocessing import Imputer
+imp = Imputer(missing_values=4, strategy='median', axis=0)
+imp.fit(df[['race']])
+df['race'] = imp.transform(df[['race']]).ravel()
+
+df['race'] = df['race'].astype('int64')
+
+df['race'] = le.inverse_transform(df['race'])
+
+
+
 def labelEncode():
     from sklearn.preprocessing import LabelEncoder
     le = LabelEncoder()
