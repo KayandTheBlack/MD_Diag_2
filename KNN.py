@@ -1,23 +1,14 @@
 import numpy as np  # Llibreria matemÃ tica
-import matplotlib.pyplot as plt  # Per mostrar plots
-import sklearn  # Llibreia de DM
-import sklearn.datasets as ds  # Per carregar mÃ©s facilment el dataset digits
-import sklearn.model_selection as cv  # Pel Cross-validation
-import sklearn.neighbors as nb  # Per fer servir el knn
-from matplotlib import pyplot as plt
 import pandas as pd
-from sklearn.metrics import confusion_matrix
+import sklearn  # Llibreia de DM
+import sklearn.neighbors as nb  # Per fer servir el knn
 from sklearn import metrics
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import cross_val_predict
-from sklearn.metrics import accuracy_score
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import mutual_info_classif
+from sklearn.metrics import make_scorer
+from sklearn.metrics import recall_score
 from sklearn.model_selection import GridSearchCV
 from statsmodels.stats.proportion import proportion_confint
-from sklearn.metrics import precision_score, recall_score, f1_score
-from sklearn.metrics import make_scorer
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import chi2, mutual_info_classif
-
 
 # Load the data
 train = pd.read_csv("Train2.csv", index_col=0)
