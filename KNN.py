@@ -7,21 +7,13 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import mutual_info_classif
 from sklearn.metrics import make_scorer
 from sklearn.metrics import recall_score
+from sklearn.metrics import f1_score
+
 from sklearn.model_selection import GridSearchCV
 from statsmodels.stats.proportion import proportion_confint
 
 # Load the data
-train = pd.read_csv("Train2.csv", index_col=0)
-test = pd.read_csv("Test2.csv", index_col=0)
-X_train = train.drop("readmitted", axis=1).as_matrix()
-y_train = train["readmitted"].as_matrix()
-X_test = test.drop("readmitted", axis=1).as_matrix()
-y_test = test["readmitted"].as_matrix()
 
-print(X_train.shape)
-print(y_train.shape)
-print(X_test.shape)
-print(y_test.shape)
 
 # # Simple cross-validation
 # # f-score 0.08 and 0.93
@@ -43,12 +35,40 @@ print(y_test.shape)
 
 # Grid Search
 # COMMENT IF YOU WANT TO CHECK THE BEST RESULT ONLY. TAKES TOO LONG
-scorer = make_scorer(recall_score,average='macro',labels=[0])
+scorer = make_scorer(f1_score,average='macro',labels=[0]) #TOCAR ESTO!!!!!!!!!!!!!!
 
 params = {'n_neighbors':list(range(1,30,2)), 'weights':('distance','uniform')}
 knc = nb.KNeighborsClassifier()
-clf = GridSearchCV(knc, param_grid=params,cv=10,n_jobs=-1,scoring=scorer)  # If cv is integer, by default is Stratifyed
+clf = GridSearchCV(knc, param_grid=params,cv=[(slice(None), slice(None))],n_jobs=-1,scoring=scorer)  # If cv is integer, by default is Stratifyed
+print("DESPRES DE CV")
+
+train = pd.read_csv("Train2.csv", index_col=0)
+
+i_class0 = np.where(train['readmitted'] == 0)[0]
+i_class1 = np.where(train['readmitted'] == 1)[0]
+
+print("class0 = " + str(len(i_class0)))
+print("class1 = " + str(len(i_class1)))
+print(train.shape)
+train = train.drop(train.query('readmitted == 0').sample(n=4755).index)
+train = train.drop(train.query('readmitted == 1').sample(n=57750).index)
+i_class0 = np.where(train['readmitted'] == 0)[0]
+i_class1 = np.where(train['readmitted'] == 1)[0]
+
+print(train.shape)
+
+test = pd.read_csv("Test2.csv", index_col=0)
+X_train = train.drop("readmitted", axis=1).as_matrix()
+y_train = train["readmitted"].as_matrix()
+X_test = test.drop("readmitted", axis=1).as_matrix()
+y_test = test["readmitted"].as_matrix()
+print(X_train.shape)
+print(y_train.shape)
+print(X_test.shape)
+print(y_test.shape)
+print("ABANS DE FIT")
 clf.fit(X_train, y_train)
+print("DESPRES DE FIT")
 print("Best Params=",clf.best_params_, "Accuracy=", clf.best_score_)
 
 parval=clf.best_params_
