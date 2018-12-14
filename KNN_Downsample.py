@@ -52,16 +52,16 @@ for ki in range(1,30,2):
     knc = nb.KNeighborsClassifier(n_neighbors=ki)
     knc_s = nb.KNeighborsClassifier(n_neighbors=ki)
 
-    knc.fit(X_train, y_train)
+    knc.fit(X_train1, y_train1)
     knc_s.fit(X_new, y_train)
 
     print("------- ORIGINAL -------")
 
     print("accuracy with " + str(ki) + " neighbors: " + str(knc.score(X_test, y_test)))
-    pred = knc.predict(X_test)
-    print(sklearn.metrics.confusion_matrix(y_test, pred))
-    print(sklearn.metrics.accuracy_score(y_test, pred))
-    print(metrics.classification_report(y_test, pred))
+    pred = knc.predict(X_test1)
+    print(sklearn.metrics.confusion_matrix(y_test1, pred))
+    print(sklearn.metrics.accuracy_score(y_test1, pred))
+    print(metrics.classification_report(y_test1, pred))
 
     print("------- NOISE REMOVED -------")
 
@@ -83,3 +83,6 @@ plt.grid()
 plt.tight_layout()
 
 plt.show()
+
+#tornar a fer classificador amb train normal i millors parametres trobats per recall
+# i aplicar sobre test normal
