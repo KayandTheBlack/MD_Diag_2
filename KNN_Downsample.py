@@ -93,7 +93,7 @@ plt.show()
 
 
 # Best ki with original train and test data
-print("---- BEST RESULTS ----")
+print("---- BEST RESULTS BALANCED ----")
 
 # Balance original train data with the same proportion as train1
 Train_Balanced = train.drop(train.query('readmitted == 1').sample(frac=0.87108, random_state=1).index)
@@ -110,6 +110,78 @@ y_train_balanced = Train_Balanced["readmitted"]
 
 knc = nb.KNeighborsClassifier(n_neighbors=best_ki)
 knc.fit(X_train_balanced, y_train_balanced)
+print("accuracy with " + str(best_ki) + " neighbors: " + str(knc.score(X_test, y_test)))
+pred = knc.predict(X_test)
+print(sklearn.metrics.confusion_matrix(y_test, pred))
+print(metrics.classification_report(y_test, pred))
+
+
+# Now we will do the same but for an unbalanced dataset
+
+# Downsample (but not balance) train1 data
+# Join X and y into same dataset
+Train1_Downsampled = X_train1
+Train1_Downsampled['readmitted'] = y_train1
+print(Train1_Downsampled.shape)
+
+# Downsample
+Train1_Downsampled = Train1_Downsampled.drop(Train1_Downsampled.sample(frac=0.75, random_state=1).index)
+print(Train1_Downsampled.shape)
+
+# Separate into X and y again
+X_train1_downsampled = Train1_Downsampled.drop("readmitted", axis=1)
+y_train1_downsampled = Train1_Downsampled["readmitted"]
+
+# Check some shapes
+print(X_train1_downsampled.shape)
+print(y_train1_downsampled.shape)
+print(X_validation.shape)
+print(y_validation.shape)
+
+# Get best ki with downsampled train1 data
+lr = []
+lr1 = []
+best_recall = 0
+best_ki = 0
+print("------- DOWNSAMPLED -------")
+for ki in range(1,30,2):
+    knc = nb.KNeighborsClassifier(n_neighbors=ki)
+    knc.fit(X_train1_downsampled, y_train1_downsampled)
+    print("accuracy with " + str(ki) + " neighbors: " + str(knc.score(X_validation, y_validation)))
+    pred = knc.predict(X_validation)
+    print(sklearn.metrics.confusion_matrix(y_validation, pred))
+    print(metrics.classification_report(y_validation, pred))
+    # Save ki with the best recall score for class 0
+    if sklearn.metrics.recall_score(y_validation, pred, average=None)[0] > best_recall:
+        best_recall = sklearn.metrics.recall_score(y_validation, pred, average=None)[0]
+        best_ki = ki
+    lr.append(sklearn.metrics.recall_score(y_validation, pred, average=None)[0])
+    lr1.append(sklearn.metrics.recall_score(y_validation, pred, average=None)[1])
+
+# Get plot from both classes' recall
+plt.plot(range(1,30,2),lr,'g',label='Class 0')
+plt.plot(range(1,30,2),lr1,'r',label='Class 1')
+plt.xlabel('k')
+plt.ylabel('Recall')
+plt.legend(loc='lower right')
+plt.grid()
+plt.tight_layout()
+
+plt.show()
+
+
+# Best ki with original train and test data
+print("---- BEST RESULTS DOWNSAMPLED ----")
+
+# Downsample original train data with the same proportion as train1
+Train_Downsampled = train.drop(train.query('readmitted == 1').sample(frac=0.75, random_state=1).index)
+print(Train_Balanced.shape)
+
+X_train_downsampled = Train_Downsampled.drop("readmitted", axis=1)
+y_train_downsampled = Train_Downsampled["readmitted"]
+
+knc = nb.KNeighborsClassifier(n_neighbors=best_ki)
+knc.fit(X_train_downsampled, y_train_downsampled)
 print("accuracy with " + str(best_ki) + " neighbors: " + str(knc.score(X_test, y_test)))
 pred = knc.predict(X_test)
 print(sklearn.metrics.confusion_matrix(y_test, pred))
