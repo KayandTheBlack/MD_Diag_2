@@ -3,39 +3,45 @@ import numpy as np
 from sklearn.naive_bayes import GaussianNB  ### Because continuous data
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import cross_val_score, train_test_split
-from imblearn.over_sampling import SMOTE
-from collections import Counter
 from sklearn.metrics import classification_report
 from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import f1_score
-import sklearn.model_selection as MS
-
-# Manera 1 (Script RF)
-print("--- Manera 1 ---")
-cv = MS.KFold(n_splits=10)
-clf = GaussianNB()
 
 train = pd.read_csv("Train.csv", index_col=0)
 test = pd.read_csv("Test.csv", index_col=0)
+
+df = pd.concat([train,test])
+X = df.drop("readmitted", axis=1)
+y = df["readmitted"]
+
+print(X.shape)
+print(y.shape)
+
+
+
+# Manera 1
+print("--- Manera 1 ---")
+cv = StratifiedKFold(n_splits=10, random_state=1)
+
+gnb = GaussianNB()
+cv_scores = cross_val_score(gnb,X=X,y=y,cv=cv)
+print(np.mean(cv_scores))
+
+predicted = cross_val_predict(GaussianNB(), X=X, y=y,  cv=cv)
+
+print(confusion_matrix(y, predicted))
+print("accuracy: " + str(accuracy_score(y, predicted)))
+print(classification_report(y, predicted))
+
+# Manera 2
+print("--- Manera 2 ---")
+
 X_train = train.drop("readmitted", axis=1).as_matrix()
 y_train = train["readmitted"].as_matrix()
 X_test = test.drop("readmitted", axis=1).as_matrix()
 y_test = test["readmitted"].as_matrix()
-
-# Manera 1
-print("--- Manera 1 ---")
-
-y_probs = MS.cross_val_predict(clf, X_train, y_train, cv=cv, method='predict_proba')  # de train
-
-for thr in np.arange(0.1, 0.25, 0.02):
-    y_pred = [0 if p > thr else 1 for p in y_probs[:, 0]]
-    print("Threshold: " + str(thr) + "\n", classification_report(y_train, y_pred))
-
-# Manera 2 (Script Profe)
-print("--- Manera 2 ---")
-
 
 def filterp(th, ProbClass1):
     """ Given a treshold "th" and a set of probabilies of belonging to class 1 "ProbClass1", return predictions """
